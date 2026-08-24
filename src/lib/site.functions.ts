@@ -119,7 +119,7 @@ export type VerifyResult =
   | { status: "too_soon"; secondsLeft: number };
 
 export const verifyChannel = createServerFn({ method: "POST" })
-  .inputValidator((data: { channelId: string; initData?: string }) =>
+  .inputValidator((data: { channelId: string; initData?: string | undefined }) =>
     z.object({ channelId: z.string().uuid(), initData: z.string().max(4096).optional() }).parse(data),
   )
   .handler(async ({ data }): Promise<VerifyResult> => {

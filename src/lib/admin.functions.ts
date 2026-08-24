@@ -1,45 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 
-const channelInput = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().trim().min(1).max(80),
-  description: z.string().trim().max(200).default(""),
-  username: z.string().trim().min(1).max(80),
-  url: z.string().trim().url().max(300),
-  chat_id: z.string().trim().max(80).nullable().optional(),
-  enabled: z.boolean().default(true),
-  required: z.boolean().default(true),
-  position: z.number().int().min(0).max(999).default(0),
-});
+import {
+  apkInput,
+  channelInput,
+  idInput,
+  passwordInput,
+  reorderInput,
+  settingsInput,
+  type AdminData,
+  type ApkInput,
+  type ChannelInput,
+  type SettingsInput,
+} from "./admin.schemas";
 
-export type ChannelInput = z.input<typeof channelInput>;
-
-const settingsInput = z.object({
-  site_name: z.string().trim().min(1).max(60),
-  tagline: z.string().trim().min(1).max(140),
-  logo_url: z.string().trim().max(500).nullable(),
-  favicon_url: z.string().trim().max(500).nullable(),
-  footer_text: z.string().trim().max(200),
-});
-
-export type SettingsInput = z.input<typeof settingsInput>;
-
-const apkInput = z.object({
-  name: z.string().trim().min(1).max(80),
-  version: z.string().trim().min(1).max(30),
-  size_label: z.string().trim().max(30),
-  description: z.string().trim().max(400),
-  download_url: z.string().trim().max(500),
-  button_text: z.string().trim().min(1).max(40),
-  enabled: z.boolean(),
-});
-
-export type ApkInput = z.input<typeof apkInput>;
+export type { AdminData, ApkInput, ChannelInput, SettingsInput };
 
 export const adminLogin = createServerFn({ method: "POST" })
   .inputValidator((data: { password: string }) =>
-    z.object({ password: z.string().min(1).max(200) }).parse(data),
+    passwordInput.parse(data),
   )
   .handler(async ({ data }) => {
     const { getAdminSession, passwordMatches } = await import("./gate.server");
@@ -195,7 +173,7 @@ export const saveChannel = createServerFn({ method: "POST" })
   });
 
 export const deleteChannel = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: string }) => z.object({ id: z.string().uuid() }).parse(data))
+  .inputValidator((data: { id: string }) => idInput.parse(data))
   .handler(async ({ data }) => {
     const { requireAdmin, supabaseAdmin } = await import("./gate.server");
     await requireAdmin();
@@ -206,7 +184,7 @@ export const deleteChannel = createServerFn({ method: "POST" })
 
 export const reorderChannels = createServerFn({ method: "POST" })
   .inputValidator((data: { ids: string[] }) =>
-    z.object({ ids: z.array(z.string().uuid()).max(50) }).parse(data),
+    reorderInput.parse(data),
   )
   .handler(async ({ data }) => {
     const { requireAdmin, supabaseAdmin } = await import("./gate.server");

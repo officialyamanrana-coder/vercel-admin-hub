@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -247,10 +247,8 @@ function HomePage() {
 
         <footer className="mb-6 mt-2 flex flex-col items-center gap-2 text-center text-[11px] text-muted-foreground">
           <p>{data.settings.footer_text}</p>
-          <Link to="/admin" className="font-semibold uppercase tracking-widest hover:text-primary">
-            Admin
-          </Link>
         </footer>
+
       </main>
 
       {/* Sticky mobile status bar */}

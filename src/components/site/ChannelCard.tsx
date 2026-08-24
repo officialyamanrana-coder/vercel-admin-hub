@@ -10,7 +10,7 @@ type Props = {
   channel: PublicChannel;
   index: number;
   status: ChannelStatus;
-  message?: string;
+  message?: string | undefined;
   onJoin: () => void;
   onVerify: () => void;
 };

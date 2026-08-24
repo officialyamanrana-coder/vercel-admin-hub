@@ -42,29 +42,6 @@ export const adminSession = createServerFn({ method: "GET" }).handler(async () =
   return { authenticated: Boolean(session.data.admin) };
 });
 
-export type AdminData = {
-  settings: SettingsInput & { id: number };
-  apk: ApkInput & { id: number };
-  channels: Array<{
-    id: string;
-    name: string;
-    description: string;
-    username: string;
-    url: string;
-    chat_id: string | null;
-    enabled: boolean;
-    required: boolean;
-    position: number;
-  }>;
-  analytics: {
-    visits: number;
-    unlocks: number;
-    downloads: number;
-    verifyAttempts: number;
-    botConfigured: boolean;
-  };
-};
-
 export const getAdminData = createServerFn({ method: "GET" }).handler(async (): Promise<AdminData> => {
   const { requireAdmin, supabaseAdmin } = await import("./gate.server");
   await requireAdmin();

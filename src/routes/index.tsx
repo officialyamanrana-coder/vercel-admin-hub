@@ -247,10 +247,8 @@ function HomePage() {
 
         <footer className="mb-6 mt-2 flex flex-col items-center gap-2 text-center text-[11px] text-muted-foreground">
           <p>{data.settings.footer_text}</p>
-          <Link to="/admin" className="font-semibold uppercase tracking-widest hover:text-primary">
-            Admin
-          </Link>
         </footer>
+
       </main>
 
       {/* Sticky mobile status bar */}

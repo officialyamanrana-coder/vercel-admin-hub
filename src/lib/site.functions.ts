@@ -33,55 +33,83 @@ export type SiteData = {
 };
 
 export const getSiteData = createServerFn({ method: "GET" }).handler(async (): Promise<SiteData> => {
-  const { supabaseAdmin, getVisitorSession } = await import("./gate.server");
-  const session = await getVisitorSession();
-
-  const [settingsResult, apkResult, channelsResult] = await Promise.all([
-    supabaseAdmin.from("site_settings").select("*").eq("id", 1).maybeSingle(),
-    supabaseAdmin.from("apk_config").select("*").eq("id", 1).maybeSingle(),
-    supabaseAdmin
-      .from("channels")
-      .select("*")
-      .eq("enabled", true)
-      .order("position", { ascending: true }),
-  ]);
-
-  const joined = session.data.joined ?? {};
-  const opened = session.data.opened ?? {};
-
-  const channels: PublicChannel[] = (channelsResult.data ?? []).map((channel) => ({
-    id: channel.id,
-    name: channel.name,
-    description: channel.description,
-    username: channel.username,
-    url: channel.url,
-    required: channel.required,
-    joined: Boolean(joined[channel.id]),
-    opened: Boolean(opened[channel.id]),
-  }));
-
-  const required = channels.filter((channel) => channel.required);
-  const unlocked = required.length > 0 && required.every((channel) => channel.joined);
-
-  return {
+  const fallback: SiteData = {
     settings: {
-      site_name: settingsResult.data?.site_name ?? "APK WORLD",
-      tagline: settingsResult.data?.tagline ?? "Download Premium APKs Safely & Easily",
-      logo_url: settingsResult.data?.logo_url ?? null,
-      favicon_url: settingsResult.data?.favicon_url ?? null,
-      footer_text: settingsResult.data?.footer_text ?? "",
+      site_name: "APK WORLD",
+      tagline: "Download Premium APKs Safely & Easily",
+      logo_url: null,
+      favicon_url: null,
+      footer_text: "© APK WORLD. All rights reserved.",
     },
     apk: {
-      name: apkResult.data?.name ?? "Premium APK",
-      version: apkResult.data?.version ?? "1.0.0",
-      size_label: apkResult.data?.size_label ?? "",
-      description: apkResult.data?.description ?? "",
-      button_text: apkResult.data?.button_text ?? "DOWNLOAD APK",
-      enabled: apkResult.data?.enabled ?? false,
+      name: "Premium APK",
+      version: "1.0.0",
+      size_label: "",
+      description: "The download will be available again shortly.",
+      button_text: "DOWNLOAD APK",
+      enabled: false,
     },
-    channels,
-    unlocked,
+    channels: [],
+    unlocked: false,
   };
+
+  try {
+    const { supabaseAdmin, getVisitorSession } = await import("./gate.server");
+    const session = await getVisitorSession();
+
+    const [settingsResult, apkResult, channelsResult] = await Promise.all([
+      supabaseAdmin.from("site_settings").select("*").eq("id", 1).maybeSingle(),
+      supabaseAdmin.from("apk_config").select("*").eq("id", 1).maybeSingle(),
+      supabaseAdmin
+        .from("channels")
+        .select("*")
+        .eq("enabled", true)
+        .order("position", { ascending: true }),
+    ]);
+
+    const backendError = settingsResult.error ?? apkResult.error ?? channelsResult.error;
+    if (backendError) throw backendError;
+
+    const joined = session.data.joined ?? {};
+    const opened = session.data.opened ?? {};
+
+    const channels: PublicChannel[] = (channelsResult.data ?? []).map((channel) => ({
+      id: channel.id,
+      name: channel.name,
+      description: channel.description,
+      username: channel.username,
+      url: channel.url,
+      required: channel.required,
+      joined: Boolean(joined[channel.id]),
+      opened: Boolean(opened[channel.id]),
+    }));
+
+    const required = channels.filter((channel) => channel.required);
+    const unlocked = required.length > 0 && required.every((channel) => channel.joined);
+
+    return {
+      settings: {
+        site_name: settingsResult.data?.site_name ?? fallback.settings.site_name,
+        tagline: settingsResult.data?.tagline ?? fallback.settings.tagline,
+        logo_url: settingsResult.data?.logo_url ?? null,
+        favicon_url: settingsResult.data?.favicon_url ?? null,
+        footer_text: settingsResult.data?.footer_text ?? fallback.settings.footer_text,
+      },
+      apk: {
+        name: apkResult.data?.name ?? fallback.apk.name,
+        version: apkResult.data?.version ?? fallback.apk.version,
+        size_label: apkResult.data?.size_label ?? "",
+        description: apkResult.data?.description ?? "",
+        button_text: apkResult.data?.button_text ?? fallback.apk.button_text,
+        enabled: apkResult.data?.enabled ?? false,
+      },
+      channels,
+      unlocked,
+    };
+  } catch (error) {
+    console.error("[site-data] backend unavailable", error);
+    return fallback;
+  }
 });
 
 export const trackVisit = createServerFn({ method: "POST" }).handler(async () => {

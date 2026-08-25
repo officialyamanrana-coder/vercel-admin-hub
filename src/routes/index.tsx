@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ShieldCheck, Sparkles, Package, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
@@ -40,13 +40,14 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  pendingComponent: HomeSkeleton,
   component: HomePage,
 });
 
 type TelegramWebApp = { initData?: string; ready?: () => void; expand?: () => void };
 
 function HomePage() {
-  const { data } = useQuery(siteQuery);
+  const { data } = useSuspenseQuery(siteQuery);
   const queryClient = useQueryClient();
 
   const visit = useServerFn(trackVisit);
@@ -151,8 +152,6 @@ function HomePage() {
       setDownloading(false);
     }
   }, [download]);
-
-  if (!data) return <HomeSkeleton />;
 
   const unlocked = requiredChannels.length > 0 && joinedRequired === requiredChannels.length;
   const logo = data.settings.logo_url || fallbackLogo;

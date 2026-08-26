@@ -12,4 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // GitHub/Vercel builds must emit Vercel functions rather than the Lovable
+  // workspace's default Cloudflare worker bundle.
+  nitro: { preset: "vercel" },
 });

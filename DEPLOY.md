@@ -1,7 +1,7 @@
 # Deploying APK WORLD to Vercel
 
-The app is a TanStack Start (SSR) project. Nitro auto-detects Vercel at build time,
-so no extra config file is needed.
+The app is a TanStack Start project. Its Nitro output is explicitly configured
+for Vercel in `vite.config.ts`.
 
 ## 1. Get the code to GitHub
 
@@ -12,6 +12,7 @@ In Lovable: **GitHub → Connect / Push to GitHub**.
 1. vercel.com → **Add New… → Project** → import the repo.
 2. Framework preset: **Other** (leave defaults).
 3. Build command: `npm run build` — Output: leave empty (Nitro handles it).
+4. Do not override `NITRO_PRESET` or `SERVER_PRESET` in Vercel.
 
 ## 3. Environment variables (Vercel → Settings → Environment Variables)
 
@@ -23,7 +24,7 @@ In Lovable: **GitHub → Connect / Push to GitHub**.
 | `SUPABASE_URL` | same as `VITE_SUPABASE_URL` |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role key of your own backend project |
 | `SESSION_SECRET` | any long random string (`openssl rand -hex 32`) |
-| `ADMIN_PASSWORD` | your admin panel password |
+| `ADMIN_PASSWORD` | `Ya@010108` (or your replacement password) |
 | `TELEGRAM_BOT_TOKEN` | optional — enables real Telegram membership checks |
 
 > Note: on Lovable Cloud the service-role key is managed for you and is not

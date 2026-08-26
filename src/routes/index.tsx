@@ -24,6 +24,7 @@ const siteQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   loader: ({ context }) => context.queryClient.ensureQueryData(siteQuery),
   head: () => ({
     meta: [
